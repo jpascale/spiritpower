@@ -21,9 +21,9 @@ uint32_t magenta = strip.Color(255, 0, 255);
 #define NUM_TAGS 3
 
 //TFID Id's
-int redId[] = {4, 195, 108, 114};
-int greenId[] = {4, 163, 108, 114};
-int blueId[] = {4, 228, 108, 114};
+int redId[] = {4, 196, 108, 114};
+int greenId[] = {4, 7, 108, 114};
+int blueId[] = {4, 229, 108, 114};
 int * taskRfid[NUM_TAGS]; //red green blue
 
 //Flex sensor
@@ -78,10 +78,10 @@ void setup() {
 
 void loop() { 
 
-  if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()){
+  /*if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()){
     dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
     Serial.println();
-  }
+  }*/
 
   ///////// Setting a new task
   if (!task){
@@ -134,9 +134,21 @@ void loop() {
       Serial.println(taskRfid[tasknum][2]);
       Serial.println(str[3]);
       Serial.println(taskRfid[tasknum][3]);*/
-      dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
+      //dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
+      byte * buffer = mfrc522.uid.uidByte;
+      if (buffer[0] == taskRfid[tasknum][0] && buffer[1] == taskRfid[tasknum][1] && buffer[2] == taskRfid[tasknum][2] && buffer[3] == taskRfid[tasknum][3]) {
+        points += 1;
+        task = false;
+        Serial.print("Touched ");
+        //Serial.print(getTaskName());
+        Serial.print(", points are ");
+        Serial.println(points);
+        //updateTaskPointIndicator();
+        //delay(2000);
+      }
+      
       //updateTaskPointIndicator();
-      if (points == 10){
+      if (points >= 10){
         updateTaskPointIndicator();
         points = 0;
         Serial.println("You won! Starting new game.");
@@ -159,7 +171,7 @@ void loop() {
 }
 
 // Helper routine to dump a byte array as hex values to Serial
-void dump_byte_array(byte *buffer, byte bufferSize) {
+/*void dump_byte_array(byte *buffer, byte bufferSize) {
   //for (byte i = 0; i < bufferSize; i++) {
     //Serial.print(buffer[i] < 0x10 ? " 0" : " ");
     //Serial.print(buffer[i], HEX);
@@ -177,13 +189,14 @@ void dump_byte_array(byte *buffer, byte bufferSize) {
         points += 1;
         task = false;
         Serial.print("Touched ");
-        Serial.print(getTaskName());
+        //Serial.print(getTaskName());
         Serial.print(", points are ");
         Serial.println(points);
         //updateTaskPointIndicator();
         //delay(2000);
       }
-}
+      return;
+}*/
 
 void RingTurnOff() {
   int i;
