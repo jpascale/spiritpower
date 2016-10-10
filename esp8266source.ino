@@ -21,9 +21,9 @@ uint32_t magenta = strip.Color(255, 0, 255);
 #define NUM_TAGS 3
 
 //TFID Id's
-int redId[] = {136, 4, 195, 108};
-int greenId[] = {136, 4, 163, 108};
-int blueId[] = {136, 4, 228, 108};
+int redId[] = {4, 195, 108, 114};
+int greenId[] = {4, 163, 108, 114};
+int blueId[] = {4, 228, 108, 114};
 int * taskRfid[NUM_TAGS]; //red green blue
 
 //Flex sensor
@@ -37,10 +37,10 @@ const float R_DIV = 47500.0; // Measured resistance of 3.3k resistor
 
 // Upload the code, then try to adjust these values to more
 // accurately calculate bend degree.
-const float STRAIGHT_RESISTANCE = 37300.0; // resistance when straight
-const float BEND_RESISTANCE = 90000.0; // resistance at 90 deg
+const float STRAIGHT_RESISTANCE = 100.0;//37300.0; // resistance when straight
+const float BEND_RESISTANCE = 10000.0; // resistance at 90 deg
 
-#define FLEX_BEND_LIMIT 180
+#define FLEX_BEND_LIMIT 60
 boolean task = false;
 int tasknum = 0;
 int points = 0;
@@ -179,6 +179,7 @@ void dump_byte_array(byte *buffer, byte bufferSize) {
         //Serial.print(getTaskName());
         Serial.print(", points are ");
         Serial.println(points);
+        delay(2000);
       }
 }
 
