@@ -107,6 +107,7 @@ void loop() {
     
     charged = true;
     initial_millis = millis();
+    delay(1000);
   }
 
   ////////////////// Reading from the RFID
@@ -134,7 +135,7 @@ void loop() {
       Serial.println(str[3]);
       Serial.println(taskRfid[tasknum][3]);*/
       dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
-      
+      //updateTaskPointIndicator();
       if (points == 10){
         updateTaskPointIndicator();
         points = 0;
@@ -176,10 +177,11 @@ void dump_byte_array(byte *buffer, byte bufferSize) {
         points += 1;
         task = false;
         Serial.print("Touched ");
-        //Serial.print(getTaskName());
+        Serial.print(getTaskName());
         Serial.print(", points are ");
         Serial.println(points);
-        delay(2000);
+        //updateTaskPointIndicator();
+        //delay(2000);
       }
 }
 
@@ -256,9 +258,9 @@ void checkTime() {
     charged = false;
     RingTurnOff();
   } else {
-    Serial.print("There's ");
-    Serial.print((15000.0 - (millis() - initial_millis))/1000);
-    Serial.println(" secs left.");
+    //Serial.print("There's ");
+    //Serial.print((15000.0 - (millis() - initial_millis))/1000);
+    //Serial.println(" secs left.");
   }
 }
 
