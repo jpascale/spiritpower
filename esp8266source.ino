@@ -24,11 +24,13 @@ WiFiUDP Udp;
 unsigned int localUdpPort = 4210;  // local port to listen on
 char incomingPacket[255];  // buffer for incoming packets
 
+unsigned long dihmtime;
 
 //Colors
 uint32_t red = strip.Color(255, 0, 0);
 uint32_t green = strip.Color(0, 255, 0);
 uint32_t blue = strip.Color(0, 0, 255);
+uint32_t yellow = strip.Color(255, 255, 0);
 uint32_t magenta = strip.Color(255, 0, 255);
 
 //Game logic
@@ -95,7 +97,7 @@ void setup() {
   bent = false;
   charge_counter = 0;
   initial_millis = millis();
-  
+  dihmtime = millis();
 }
 
 void loop() { 
@@ -104,7 +106,10 @@ void loop() {
     dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
     Serial.println();
   }*/
-
+  if (millis() - dihmtime > 2000) {
+    dihm();
+    dihmtime = millis();
+  }
   ///////// Setting a new task
   if (!task){
     task = true;
@@ -167,12 +172,15 @@ void loop() {
         Serial.println(points);
         //updateTaskPointIndicator();
         //delay(2000);
+        point();
       }
       
       //updateTaskPointIndicator();
       if (points >= 10){
         updateTaskPointIndicator();
         points = 0;
+        win();
+        while(1);
         Serial.println("You won! Starting new game.");
         delay(5000);
         RingTurnOff();
@@ -337,6 +345,40 @@ void updateChargeLed(int bents){
   LEDUpperBoundSetUp(bents * 4 - 1, magenta);
 }
 
+void lose() {
+  strip.setPixelColor(0, blue);
+  strip.setPixelColor(2, blue);
+  strip.setPixelColor(4, blue);
+  strip.setPixelColor(6, blue);
+  strip.setPixelColor(8, blue);
+  strip.setPixelColor(10, blue);
+  strip.setPixelColor(12, blue);
+  strip.setPixelColor(1, red);
+  strip.setPixelColor(3, red);
+  strip.setPixelColor(5, red);
+  strip.setPixelColor(7, red);
+  strip.setPixelColor(9, red);
+  strip.setPixelColor(11, red);
+  strip.show();
+}
+
+void win() {
+  strip.setPixelColor(0, green);
+  strip.setPixelColor(2, green);
+  strip.setPixelColor(4, green);
+  strip.setPixelColor(6, green);
+  strip.setPixelColor(8, green);
+  strip.setPixelColor(10, green);
+  strip.setPixelColor(12, green);
+  strip.setPixelColor(1, yellow);
+  strip.setPixelColor(3, yellow);
+  strip.setPixelColor(5, yellow);
+  strip.setPixelColor(7, yellow);
+  strip.setPixelColor(9, yellow);
+  strip.setPixelColor(11, yellow);
+  strip.show();
+}
+
 /////////////////////////////////
 // WIFI
 /////////////////////////////////
@@ -368,7 +410,7 @@ void join(){
   //Wait
   Serial.println("Waiting for reply");
   while(!packetSize){
-    Serial.println("Still waiting");
+    Serial.println("Still waiting join");
     delay(250);
     packetSize = Udp.parsePacket();
   }
@@ -384,7 +426,7 @@ void join(){
   int packetSize2 = Udp.parsePacket();
 
   while(!packetSize2){
-    Serial.println("Still waiting");
+    Serial.println("Still waiting join2");
     delay(250);
     packetSize2 = Udp.parsePacket();
   }
@@ -399,6 +441,60 @@ void join(){
     
 }
 
+void point(){
+  Serial.println("Sending POINT request");
+  Udp.beginPacket(serverip, serverport);
+  Udp.write("POINT");
+  Udp.endPacket();
+
+  int packetSize = Udp.parsePacket();
+  //Wait
+  Serial.println("Waiting for reply");
+  while(!packetSize){
+    Serial.println("Still waiting point");
+    delay(250);
+    packetSize = Udp.parsePacket();
+  }
+
+  int len = Udp.read(incomingPacket, 255);
+  if (len > 0)
+  {
+    incomingPacket[len] = 0;
+  }
+
+  Serial.printf("%s\n", incomingPacket);
+}
+
+void dihm(){
+  Serial.println("Sending DIHM request");
+  Udp.beginPacket(serverip, serverport);
+  Udp.write("DIHM");
+  Udp.endPacket();
+
+  int packetSize = Udp.parsePacket();
+  //Wait
+  //Serial.println("Waiting for reply");
+  //delay(10);
+  //while(!packetSize){
+  //  Serial.println("Still waiting dihm");
+  //  delay(250);
+  //  packetSize = Udp.parsePacket();
+  //}
 
 
+  int len = Udp.read(incomingPacket, 255);
+  if (len > 0)
+  {
+    incomingPacket[len] = 0;
+  }
+
+  Serial.printf("%s\n", incomingPacket);
+
+  if (incomingPacket[0] == 'F'){
+    Serial.println("I LOST");
+    lose();
+    while(true);
+  }
+  
+}
 
