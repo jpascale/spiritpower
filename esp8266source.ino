@@ -24,6 +24,10 @@ uint32_t magenta = strip.Color(255, 0, 255);
 int redId[] = {4, 196, 108, 114};
 int greenId[] = {4, 7, 108, 114};
 int blueId[] = {4, 229, 108, 114};
+//int redId[] = {4, 195, 108, 114};
+//int greenId[] = {4, 163, 108, 114};
+//int blueId[] = {4, 228, 108, 114};
+
 int * taskRfid[NUM_TAGS]; //red green blue
 
 //Flex sensor
