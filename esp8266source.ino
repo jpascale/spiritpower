@@ -1,5 +1,7 @@
 #include "MFRC522.h"
 #include <Adafruit_NeoPixel.h>
+#include <ESP8266WiFi.h>
+#include <WiFiUdp.h>
 
 #define RST_PIN 15 // RST-PIN for RC522 - RFID - SPI - Modul GPIO15 
 #define SS_PIN  2  // SDA-PIN for RC522 - RFID - SPI - Modul GPIO2 
@@ -10,6 +12,18 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance
 #define RING_PIN 5
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, RING_PIN, NEO_GRB + NEO_KHZ800);
+
+//Wifi
+const char* ssid = "Arashenbek";
+const char* password = "kolobok123";
+const int serverport = 5005;
+IPAddress serverip(192, 168, 0, 107);
+
+//WiFi config
+WiFiUDP Udp;
+unsigned int localUdpPort = 4210;  // local port to listen on
+char incomingPacket[255];  // buffer for incoming packets
+
 
 //Colors
 uint32_t red = strip.Color(255, 0, 0);
@@ -56,6 +70,10 @@ int charge_counter;
 
 
 void setup() {
+
+  wifiBegin();
+  join();
+  
   Serial.begin(9600);    // Initialize serial communications
   SPI.begin();           // Init SPI bus
   mfrc522.PCD_Init();    // Init MFRC522
@@ -318,4 +336,69 @@ void updateChargeLed(int bents){
 
   LEDUpperBoundSetUp(bents * 4 - 1, magenta);
 }
+
+/////////////////////////////////
+// WIFI
+/////////////////////////////////
+
+void wifiBegin() {
+  Serial.begin(115200);
+  Serial.println();
+
+  Serial.printf("Connecting to %s ", ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println(" connected");
+
+  Udp.begin(localUdpPort);
+  Serial.printf("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort);
+}
+
+void join(){
+  Serial.println("Sending JOIN request");
+  Udp.beginPacket(serverip, serverport);
+  Udp.write("JOIN");
+  Udp.endPacket();
+
+ int packetSize = Udp.parsePacket();
+  //Wait
+  Serial.println("Waiting for reply");
+  while(!packetSize){
+    Serial.println("Still waiting");
+    delay(250);
+    packetSize = Udp.parsePacket();
+  }
+
+  int len = Udp.read(incomingPacket, 255);
+  if (len > 0)
+  {
+    incomingPacket[len] = 0;
+  }
+
+  Serial.printf("%s\n", incomingPacket);
+
+  int packetSize2 = Udp.parsePacket();
+
+  while(!packetSize2){
+    Serial.println("Still waiting");
+    delay(250);
+    packetSize2 = Udp.parsePacket();
+  }
+
+  len = Udp.read(incomingPacket, 255);
+  if (len > 0)
+  {
+    incomingPacket[len] = 0;
+  }
+
+  Serial.printf("%s\n", incomingPacket);
+    
+}
+
+
+
 
